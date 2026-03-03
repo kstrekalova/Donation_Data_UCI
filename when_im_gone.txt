@@ -1,0 +1,49 @@
+REGARDING HOW TO LEAVE ADMIN/USER ACCESS WITHOUT ME (CREATOR)
+OVERSEEING ACCESS VIA secrets.toml
+=============================================================
+The Big Idea
+Instead of hardcoded secrets, you'd have:
+
+A users table in your existing database
+An Admin page in the app itself for managing users
+Role-based access (Admin vs. Regular User)
+The Architecture
+Database
+└── users table
+    ├── username
+    ├── password (hashed! never plain text)
+    ├── role  ("admin" or "user")
+    └── created_at
+
+App Pages
+├── Dashboard
+├── Add Donation     ← requires login
+├── View Data
+├── Reports
+├── Community Analysis
+└── 👑 Admin Panel   ← requires admin role
+    ├── Add new user
+    ├── Remove user
+    └── Change roles
+How the Admin Panel Would Work
+The admin would just see a simple form — no code, no secrets:
+
+➕ Add User: [Username field] [Password field] [Role dropdown] → Submit 🗑️ Remove User: [Dropdown of existing users] → Delete
+
+Completely point-and-click, no technical knowledge needed!
+
+The Handoff Plan 
+Step	What happens
+You set up the users table & Admin page	One-time setup
+You create an admin account for your successor	Before you leave
+They log in, manage users themselves forever	No coding needed
+You could even remove yourself from the user list	Clean handoff ✅
+One Important Note — Password Hashing 🔒
+Right now your secrets.toml stores plain text passwords which is fine for a small prototype, but if you move to a database you'd want to hash passwords (scramble them so even you can't read them). Python has a library called bcrypt that does this in ~2 lines of code.
+
+Since You Already Have database.py...
+You're actually really well-positioned for this! It would mostly just be:
+
+Adding a users table to your existing database
+Building a simple admin UI page
+Swapping out the secrets.toml credential check for a database lookup
