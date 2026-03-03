@@ -22,7 +22,7 @@ db = DonationDatabase()
 st.sidebar.title("📦 UCI Donation Tracker")
 page = st.sidebar.radio(
     "Navigation",
-    ["Dashboard", "Add Donation", "View Data", "Reports", "Community Analysis"]  # ← Add this
+    ["Dashboard", "Add Donation", "View Data", "Reports", "Community Analysis"]
 )
 
 # ============================================
