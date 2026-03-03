@@ -1,0 +1,7 @@
+To run, do:
+
+python setup_database.py
+python import_old_database.py
+streamlit run streamlit_app.py
+
+I'm not sure if deleting donation_data.db is necessary in-between runs of this.
