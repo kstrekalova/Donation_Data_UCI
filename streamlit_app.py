@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 from database import DonationDatabase
+from add_donation import show_add_donation
 import config
 
 # Page configuration
@@ -206,6 +207,7 @@ if page == "Dashboard":
 # PAGE 2: ADD DONATION
 # ============================================
 elif page == "Add Donation":
+    show_add_donation()
     st.title("➕ Add New Donation")
     
     with st.form("donation_form"):

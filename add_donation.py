@@ -2,29 +2,35 @@
 
 from database import DonationDatabase
 from datetime import datetime
-import streamlit as st
 import config
+import streamlit as st
 
-# --- Auth Check ---
+
 def check_credentials(username, password):
     users = st.secrets["allowed_users"]
     return username in users and users[username] == password
 
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+# ✅ New Streamlit page function — auth check INSIDE
+def show_add_donation():
+    # Auth check
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
 
-if not st.session_state.authenticated:
-    st.title("🔒 Login Required")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if check_credentials(username, password):
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error("Invalid username or password")
-    st.stop()  # Stops the rest of the page from loading
+    if not st.session_state.authenticated:
+        st.title("🔒 Login Required")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if check_credentials(username, password):
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+        st.stop()
 
+    # Streamlit donation form goes here
+    st.title("Add Donation")
+    # ... rest of your form
 
 def add_donation_cli():
     """Interactive command-line data entry"""
