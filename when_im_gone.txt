@@ -33,7 +33,6 @@ The admin would just see a simple form — no code, no secrets:
 Completely point-and-click, no technical knowledge needed!
 
 The Handoff Plan 
-Step	What happens
 You set up the users table & Admin page	One-time setup
 You create an admin account for your successor	Before you leave
 They log in, manage users themselves forever	No coding needed
