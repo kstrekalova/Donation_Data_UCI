@@ -336,14 +336,12 @@ elif page == "Reports":
         
         # Summary stats
         st.subheader("Summary Statistics")
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
             st.metric("Total Donations", f"{len(filtered_df):,}")
         with col2:
             st.metric("Total Weight (lbs)", f"{filtered_df['weight_lbs'].sum():,.0f}")
-        with col3:
-            st.metric("Total Bins", f"{filtered_df['bins'].sum():,.0f}")
         
         # Monthly breakdown
         st.subheader("Monthly Breakdown")
