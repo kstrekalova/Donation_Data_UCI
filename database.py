@@ -4,6 +4,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 import config
+import bcrypt
 
 class DonationDatabase:
     def __init__(self, db_path=None):
@@ -100,6 +101,72 @@ class DonationDatabase:
         conn.close()
         return df
     
+    ### Implementing database for users
+    def create_users_table(self):
+        """Create users table if it doesn't exist"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    def add_user(self, username, password, role='user'):
+        """Add a new user with a hashed password"""
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
+            (username, hashed, role)
+        )
+        conn.commit()
+        conn.close()
+
+    def remove_user(self, username):
+        """Remove a user by username"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM users WHERE username = ?', (username,))
+        conn.commit()
+        conn.close()
+
+    def verify_user(self, username, password):
+        """Check credentials — returns role if valid, None if not"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT password_hash, role FROM users WHERE username = ?', (username,))
+        result = cursor.fetchone()
+        conn.close()
+        if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
+            return result[1]  # returns "admin" or "user"
+        return None
+
+    def get_all_users(self):
+        """Get list of all users"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT username, role, created_at FROM users')
+        result = cursor.fetchall()
+        conn.close()
+        return result
+
+    def user_count(self):
+        """Return total number of users"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM users')
+        result = cursor.fetchone()[0]
+        conn.close()
+        return result
+
 '''
 Example usage: 
 if __name__ == "__main__":

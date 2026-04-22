@@ -7,35 +7,65 @@ import streamlit as st
 
 
 def check_credentials(username, password):
-    users = st.secrets["allowed_users"]
-    ## TEMP
-    st.write("Secrets loaded:", dict(users))   # ← temp debug line
-    st.write("Entered username:", repr(username))
-    st.write("Entered password:", repr(password))
+    """Verify credentials against the database"""
+    db = DonationDatabase()
+    role = db.verify_user(username, password)
+    return role  # returns "admin", "user", or None
 
-    return username in users and users[username] == password
 
-# ✅ New Streamlit page function — auth check INSIDE
 def show_add_donation():
     # Auth check
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
+        st.session_state.username = None
+        st.session_state.role = None
 
     if not st.session_state.authenticated:
+        db = DonationDatabase()
+
+        # First time setup — no users exist yet
+        if db.user_count() == 0:
+            st.title("⚙️ First Time Setup")
+            st.info("No users found. Create your first admin account below.")
+            new_user = st.text_input("Admin Username")
+            new_pass = st.text_input("Admin Password", type="password")
+            if st.button("Create Admin Account"):
+                if new_user and new_pass:
+                    db.add_user(new_user, new_pass, role='admin')
+                    st.success("✅ Admin account created! Please log in.")
+                    st.rerun()
+                else:
+                    st.warning("Please fill in both fields.")
+            st.stop()
+
+        # Normal login
         st.title("🔒 Login Required")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         if st.button("Login"):
-            if check_credentials(username, password):
+            role = check_credentials(username, password)
+            if role:
                 st.session_state.authenticated = True
+                st.session_state.username = username
+                st.session_state.role = role
                 st.rerun()
             else:
                 st.error("Invalid username or password")
         st.stop()
 
-    # Streamlit donation form goes here
+    # Logged in — show user info & logout in sidebar
+    st.sidebar.write(f"👤 Logged in as: **{st.session_state.username}**")
+    st.sidebar.write(f"Role: _{st.session_state.role}_")
+    if st.sidebar.button("Logout"):
+        st.session_state.authenticated = False
+        st.session_state.username = None
+        st.session_state.role = None
+        st.rerun()
+
+    # Your donation form goes here
     st.title("Add Donation")
     # ... rest of your form
+
 
 def add_donation_cli():
     """Interactive command-line data entry"""

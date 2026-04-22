@@ -46,3 +46,14 @@ You're actually really well-positioned for this! It would mostly just be:
 Adding a users table to your existing database
 Building a simple admin UI page
 Swapping out the secrets.toml credential check for a database lookup
+
+
+
+--- IMPLEMENTATION ---
+Overview of Changes:
+requirements.txt   ← add bcrypt (password hashing)
+database.py        ← add users table + user management functions
+add_donation.py    ← update check_credentials to use database
+admin.py           ← NEW: admin panel page
+streamlit_app.py   ← add admin page to navigation
+
