@@ -8,6 +8,11 @@ import streamlit as st
 
 def check_credentials(username, password):
     users = st.secrets["allowed_users"]
+    ## TEMP
+    st.write("Secrets loaded:", dict(users))   # ← temp debug line
+    st.write("Entered username:", repr(username))
+    st.write("Entered password:", repr(password))
+
     return username in users and users[username] == password
 
 # ✅ New Streamlit page function — auth check INSIDE
