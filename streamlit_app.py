@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 from database import DonationDatabase
 from add_donation import show_add_donation
+from admin import show_admin
 import config
 
 # Page configuration
@@ -21,9 +22,14 @@ db = DonationDatabase()
 
 # Sidebar navigation
 st.sidebar.title("📦 UCI Donation Tracker")
+# Build page list — only show Admin tab if logged in as admin
+pages = ["Dashboard", "Add Donation", "View Data", "Reports", "Community Analysis"]
+if st.session_state.get("role") == "admin":
+    pages.append("Admin")
+
 page = st.sidebar.radio(
     "Navigation",
-    ["Dashboard", "Add Donation", "View Data", "Reports", "Community Analysis"]
+    pages
 )
 
 # ============================================
@@ -481,3 +487,9 @@ elif page == "Community Analysis":
             use_container_width=True,
             hide_index=True
         )
+
+    # ============================================
+# PAGE 6: ADMIN PANEL
+# ============================================
+elif page == "Admin":
+    show_admin()
