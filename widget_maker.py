@@ -34,5 +34,5 @@ fig.update_layout(xaxis_tickangle=-45, height=500)
 
 # Export as standalone HTML
 fig.update_xaxes(rangeslider_visible=True)
-fig.write_html('donation_widget.html')
+fig.write_html('donation_widget.html', include_plotlyjs='cdn')
 print('✅ Exported!')
