@@ -89,7 +89,7 @@ if page == "Dashboard":
             total_weight = filtered_df['weight_lbs'].sum()
             st.metric("Total Weight (lbs)", f"{total_weight:,.0f}")
         with col3:
-            total_bins = filtered_df['bins'].sum()
+            total_bins = pd.to_numeric(filtered_df['bins'], errors='coerce').sum()
             st.metric("Total Bins", f"{total_bins:,.0f}")
         with col4:
             locations_count = filtered_df['location'].nunique()
