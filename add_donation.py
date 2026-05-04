@@ -1,4 +1,4 @@
-"""Command-line interface for adding donation records"""
+"""Interface for adding donation records"""
 
 from database import DonationDatabase
 from datetime import datetime
@@ -7,10 +7,15 @@ import streamlit as st
 
 
 def check_credentials(username, password):
-    """Verify credentials against the database"""
-    db = DonationDatabase()
-    role = db.verify_user(username, password)
-    return role  # returns "admin", "user", or None
+    """Verify credentials against secrets.toml"""
+    try:
+        users = st.secrets["allowed_users"]
+        if username in users and users[username] == password:
+            return "admin"
+        return None
+    except Exception:
+        st.error("⚠️ Could not load user credentials. Check secrets configuration.")
+        return None
 
 
 def show_add_donation():
@@ -21,24 +26,6 @@ def show_add_donation():
         st.session_state.role = None
 
     if not st.session_state.authenticated:
-        db = DonationDatabase()
-
-        # First time setup — no users exist yet
-        if db.user_count() == 0:
-            st.title("⚙️ First Time Setup")
-            st.info("No users found. Create your first admin account below.")
-            new_user = st.text_input("Admin Username")
-            new_pass = st.text_input("Admin Password", type="password")
-            if st.button("Create Admin Account"):
-                if new_user and new_pass:
-                    db.add_user(new_user, new_pass, role='admin')
-                    st.success("✅ Admin account created! Please log in.")
-                    st.rerun()
-                else:
-                    st.warning("Please fill in both fields.")
-            st.stop()
-
-        # Normal login
         st.title("🔒 Login Required")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -73,16 +60,15 @@ def add_donation_cli():
     
     print("=== Add Donation Record ===\n")
     
-    # Get input
     year = int(input("\nYear (e.g., 2026): ") or datetime.now().year)
     month = int(input("Month (1-12): ") or datetime.now().month)
     location = input("Location: ") 
     weight = input("Estimated donation weight in lbs: ") 
-    bins = input(": ") or None
+    bins = input("Number of bins: ") or None
     moveout = input("UG or G for under/grad moveout (optional): ") or None
     notes = input("Additional notes (optional): ") or None
 
-    # Add to database
+    db = DonationDatabase()
     record_id = db.add_donation(
         year=year,
         month=month,
