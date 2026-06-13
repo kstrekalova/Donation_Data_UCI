@@ -12,8 +12,8 @@ def check_credentials(username, password):
         db = DonationDatabase()
         role = db.verify_user(username, password)
         return role
-    except Exception:
-        st.error("⚠️ Could not verify user credentials.")
+    except Exception as e:
+        st.error(f"⚠️ Could not verify user credentials: {e}")
         return None
 
 
