@@ -32,7 +32,7 @@ class DonationDatabase:
     def get_all_donations(self):
         """Retrieve all donation records as a DataFrame"""
         conn = get_connection()
-        df = pd.read_sql_query("SELECT * FROM donations ORDER BY date DESC", conn)
+        df = pd.read_sql_query("SELECT id, date, location, COALESCE(weight_lbs, 0) AS weight_lbs, bins, moveout, notes FROM donations ORDER BY date DESC", conn)
         conn.close()
         return df
 
