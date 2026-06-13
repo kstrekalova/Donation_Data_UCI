@@ -24,20 +24,39 @@ def show_add_donation():
         st.session_state.username = None
         st.session_state.role = None
 
+    # if not st.session_state.authenticated:
+    #     st.title("🔒 Login Required")
+    #     username = st.text_input("Username")
+    #     password = st.text_input("Password", type="password")
+    #     if st.button("Login"):
+    #         role = check_credentials(username, password)
+    #         if role:
+    #             st.session_state.authenticated = True
+    #             st.session_state.username = username
+    #             st.session_state.role = role
+    #             st.rerun()
+    #         else:
+    #             st.error("Invalid username or password")
+    #     st.stop()
     if not st.session_state.authenticated:
+        db = DonationDatabase()
+        st.write(f"Debug: user count = {db.user_count()}")  # temp
+
+        if db.user_count() == 0:
+            st.title("⚙️ First Time Setup")
+            st.info("No users found. Create your first admin account below.")
+            new_user = st.text_input("Admin Username")
+            new_pass = st.text_input("Admin Password", type="password")
+            if st.button("Create Admin Account"):
+                if new_user and new_pass:
+                    db.add_user(new_user, new_pass, role='admin')
+                    st.success("✅ Admin account created! Please log in.")
+                    st.rerun()
+                else:
+                    st.warning("Please fill in both fields.")
+            st.stop()
+
         st.title("🔒 Login Required")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            role = check_credentials(username, password)
-            if role:
-                st.session_state.authenticated = True
-                st.session_state.username = username
-                st.session_state.role = role
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
-        st.stop()
 
     # Logged in — show user info & logout in sidebar
     st.sidebar.write(f"👤 Logged in as: **{st.session_state.username}**")
