@@ -7,13 +7,14 @@ import streamlit as st
 
 
 def check_credentials(username, password):
-    """Verify credentials against the database"""
+    """Verify credentials against secrets.toml"""
     try:
-        db = DonationDatabase()
-        role = db.verify_user(username, password)
-        return role
-    except Exception as e:
-        st.error(f"⚠️ Could not verify user credentials: {e}")
+        users = st.secrets["allowed_users"]
+        if username in users and users[username] == password:
+            return "admin"
+        return None
+    except Exception:
+        st.error("⚠️ Could not load user credentials. Check secrets configuration.")
         return None
 
 
