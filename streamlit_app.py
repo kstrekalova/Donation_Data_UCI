@@ -40,6 +40,7 @@ if page == "Dashboard":
     
     # Load all data
     df = db.get_all_donations()
+    df['weight_lbs'] = df['weight_lbs'].fillna(0)
     
     if len(df) == 0:
         st.warning("No donations in database yet!")
