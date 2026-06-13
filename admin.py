@@ -17,6 +17,7 @@ def show_admin():
     # --- Current Users ---
     st.subheader("Current Users")
     users = db.get_all_users()
+    st.write(users) # ← temp debug line
 
     for user in users:
         col1, col2, col3 = st.columns([2, 1, 1])
