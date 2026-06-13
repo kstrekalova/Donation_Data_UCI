@@ -165,11 +165,22 @@ class DonationDatabase:
         conn.close()
         return result
 
+    # def user_count(self):
+    #     """Return total number of users"""
+    #     conn = get_connection()
+    #     cursor = conn.cursor()
+    #     cursor.execute('SELECT COUNT(*) FROM users')
+    #     result = cursor.fetchone()[0]
+    #     cursor.close()
+    #     conn.close()
+    #     return result
+
+    ### TEMP UPDATE:
     def user_count(self):
         """Return total number of users"""
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) FROM users')
+        cursor.execute('SELECT COUNT(*) FROM auth.users')
         result = cursor.fetchone()[0]
         cursor.close()
         conn.close()

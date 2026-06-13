@@ -90,7 +90,9 @@ def show_add_donation():
 
     if not st.session_state.authenticated:
         db = DonationDatabase()
-        st.write(f"Debug: user count = {db.user_count()}")  # temp
+        count = db.user_count()  # temp
+        all_users = db.get_all_users()  # temp
+        st.write(f"Debug: count={count}, users={all_users}")  # temp
 
         if db.user_count() == 0:
             st.title("⚙️ First Time Setup")
