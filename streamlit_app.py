@@ -296,11 +296,10 @@ elif page == "View Data":
         st.write(f"Showing {len(filtered_df)} of {len(df)} records")
         
         # Display data
-        display_cols = ['date', 'location', 'weight_lbs', 'bins', 'moveout', 'notes']
+        display_cols = ['id', 'date', 'location', 'weight_lbs', 'bins', 'moveout', 'notes']
         display_df = filtered_df[display_cols].sort_values('date', ascending=False)
-        
         st.dataframe(
-            display_df,
+            display_df.drop(columns=['id']),
             use_container_width=True,
             hide_index=True
         )
@@ -317,7 +316,7 @@ elif page == "View Data":
         if st.session_state.get("role") == "admin":
             for _, row in display_df.iterrows():
                 col1, col2 = st.columns([6, 1])
-                col1.write(row.to_dict())
+                col1.write(f"{row['date']} — {row['location']} — {row['weight_lbs']} lbs")
                 if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
                     db.delete_donation(row['id'])
                     st.success(f"Deleted record ID {row['id']}")
