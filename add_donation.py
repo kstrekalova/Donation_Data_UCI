@@ -17,6 +17,65 @@ def check_credentials(username, password):
         return None
 
 
+# def show_add_donation():
+#     # Reset session if authenticated but missing user info
+#     if st.session_state.get("authenticated") and not st.session_state.get("username"):
+#         st.session_state.authenticated = False
+#         st.session_state.username = None
+#         st.session_state.role = None
+
+#     # Auth check
+#     if "authenticated" not in st.session_state:
+#         st.session_state.authenticated = False
+#         st.session_state.username = None
+#         st.session_state.role = None
+
+#     # if not st.session_state.authenticated:
+#     #     st.title("🔒 Login Required")
+#     #     username = st.text_input("Username")
+#     #     password = st.text_input("Password", type="password")
+#     #     if st.button("Login"):
+#     #         role = check_credentials(username, password)
+#     #         if role:
+#     #             st.session_state.authenticated = True
+#     #             st.session_state.username = username
+#     #             st.session_state.role = role
+#     #             st.rerun()
+#     #         else:
+#     #             st.error("Invalid username or password")
+#     #     st.stop()
+#     if not st.session_state.authenticated:
+#         db = DonationDatabase()
+#         st.write(f"Debug: user count = {db.user_count()}")  # temp
+
+#         if db.user_count() == 0:
+#             st.title("⚙️ First Time Setup")
+#             st.info("No users found. Create your first admin account below.")
+#             new_user = st.text_input("Admin Username")
+#             new_pass = st.text_input("Admin Password", type="password")
+#             if st.button("Create Admin Account"):
+#                 if new_user and new_pass:
+#                     db.add_user(new_user, new_pass, role='admin')
+#                     st.success("✅ Admin account created! Please log in.")
+#                     st.rerun()
+#                 else:
+#                     st.warning("Please fill in both fields.")
+#             st.stop()
+
+#         st.title("🔒 Login Required")
+
+#     # Logged in — show user info & logout in sidebar
+#     st.sidebar.write(f"👤 Logged in as: **{st.session_state.username}**")
+#     st.sidebar.write(f"Role: _{st.session_state.role}_")
+#     if st.sidebar.button("Logout"):
+#         st.session_state.authenticated = False
+#         st.session_state.username = None
+#         st.session_state.role = None
+#         st.rerun()
+
+#     # Your donation form goes here
+#     st.title("Add Donation")
+#     # ... rest of your form
 def show_add_donation():
     # Reset session if authenticated but missing user info
     if st.session_state.get("authenticated") and not st.session_state.get("username"):
@@ -24,26 +83,11 @@ def show_add_donation():
         st.session_state.username = None
         st.session_state.role = None
 
-    # Auth check
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
         st.session_state.username = None
         st.session_state.role = None
 
-    # if not st.session_state.authenticated:
-    #     st.title("🔒 Login Required")
-    #     username = st.text_input("Username")
-    #     password = st.text_input("Password", type="password")
-    #     if st.button("Login"):
-    #         role = check_credentials(username, password)
-    #         if role:
-    #             st.session_state.authenticated = True
-    #             st.session_state.username = username
-    #             st.session_state.role = role
-    #             st.rerun()
-    #         else:
-    #             st.error("Invalid username or password")
-    #     st.stop()
     if not st.session_state.authenticated:
         db = DonationDatabase()
         st.write(f"Debug: user count = {db.user_count()}")  # temp
@@ -60,11 +104,23 @@ def show_add_donation():
                     st.rerun()
                 else:
                     st.warning("Please fill in both fields.")
-            st.stop()
+            st.stop()  # ← stops here if no users
 
         st.title("🔒 Login Required")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            role = check_credentials(username, password)
+            if role:
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.session_state.role = role
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+        st.stop()  # ← stops here if not logged in
 
-    # Logged in — show user info & logout in sidebar
+    # Only reaches here if authenticated
     st.sidebar.write(f"👤 Logged in as: **{st.session_state.username}**")
     st.sidebar.write(f"Role: _{st.session_state.role}_")
     if st.sidebar.button("Logout"):
@@ -72,11 +128,6 @@ def show_add_donation():
         st.session_state.username = None
         st.session_state.role = None
         st.rerun()
-
-    # Your donation form goes here
-    st.title("Add Donation")
-    # ... rest of your form
-
 
 def add_donation_cli():
     """Interactive command-line data entry"""
