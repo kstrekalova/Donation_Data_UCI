@@ -101,3 +101,76 @@ class DonationDatabase:
         conn.commit()
         cursor.close()
         conn.close()
+
+    def create_users_table(self):
+        """Create users table if it doesn't exist"""
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    def add_user(self, username, password, role='user'):
+        """Add a new user with a hashed password"""
+        import bcrypt
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)',
+            (username, hashed, role)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    def remove_user(self, username):
+        """Remove a user by username"""
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM users WHERE username = %s', (username,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    def verify_user(self, username, password):
+        """Check credentials — returns role if valid, None if not"""
+        import bcrypt
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT password_hash, role FROM users WHERE username = %s', (username,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if result and bcrypt.checkpw(password.encode('utf-8'), result[0].encode('utf-8')):
+            return result[1]
+        return None
+
+    def get_all_users(self):
+        """Get list of all users"""
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT username, role, created_at FROM users')
+        result = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return result
+
+    def user_count(self):
+        """Return total number of users"""
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM users')
+        result = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        return result
