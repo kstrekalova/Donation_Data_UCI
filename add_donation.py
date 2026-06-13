@@ -18,6 +18,12 @@ def check_credentials(username, password):
 
 
 def show_add_donation():
+    # Reset session if authenticated but missing user info
+    if st.session_state.get("authenticated") and not st.session_state.get("username"):
+        st.session_state.authenticated = False
+        st.session_state.username = None
+        st.session_state.role = None
+
     # Auth check
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
