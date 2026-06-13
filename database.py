@@ -92,3 +92,12 @@ class DonationDatabase:
         df = pd.read_sql_query(query, conn)
         conn.close()
         return df
+    
+    def delete_donation(self, record_id):
+        """Delete a donation record by ID"""
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM donations WHERE id = %s", (record_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()

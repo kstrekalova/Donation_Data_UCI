@@ -10,3 +10,6 @@ I'm not sure if deleting donation_data.db is necessary in-between runs of this.
 Also, this thing exists online at:
     https://donationdatauci-housing.streamlit.app/
     (it may show a "sleep" thing if not launched for a while, gotta "wake it up")
+
+
+NOTE: If switching to PostgreSQL, I need a hosted database — free options include Supabase or Neon.

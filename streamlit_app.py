@@ -314,6 +314,15 @@ elif page == "View Data":
             mime="text/csv"
         )
 
+        if st.session_state.get("role") == "admin":
+            for _, row in display_df.iterrows():
+                col1, col2 = st.columns([6, 1])
+                col1.write(row.to_dict())
+                if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
+                    db.delete_donation(row['id'])
+                    st.success(f"Deleted record ID {row['id']}")
+                    st.rerun()
+
 # ============================================
 # PAGE 4: REPORTS
 # ============================================
