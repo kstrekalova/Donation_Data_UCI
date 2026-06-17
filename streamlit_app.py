@@ -109,6 +109,11 @@ if page == "Dashboard - Housing":
 
         st.markdown("---")
 
+        # Filter to start at 2017 to make up for lacking data
+        monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
+        monthly['month'] = monthly['month'].astype(str)
+        monthly = monthly[monthly['month'] >= '2017-01']  # add this line
+
         # CHARTS ROW 2
         st.subheader("📈 Donations Over Time")
         monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
@@ -248,12 +253,6 @@ elif page == "Dashboard - Partners":
                 st.session_state.selected_partners = []
                 st.rerun()
             st.write("")
-            st.write("**Quick Exclude:**")
-            for partner in all_partners:
-                if st.button(f"Hide {partner}", key=f"hide_{partner}"):
-                    if partner in st.session_state.selected_partners:
-                        st.session_state.selected_partners.remove(partner)
-                        st.rerun()
 
         with right_col:
             selected_partners = st.multiselect(
