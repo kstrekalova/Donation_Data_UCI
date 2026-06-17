@@ -54,7 +54,7 @@ if page == "Dashboard":
         # ========================================
         # FILTERS
         # ========================================
-        st.subheader("🔍 Filters")
+        st.subheader("Filters")
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -111,7 +111,9 @@ if page == "Dashboard":
             fig = px.line(monthly, x='month', y='weight_lbs',
                          labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'},
                          markers=True)
-            fig.update_layout(xaxis_tickangle=-45, height=400)
+            fig.update_layout(xaxis_tickangle=-45, 
+                              height=400,
+                              font=dict(size=18))
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
