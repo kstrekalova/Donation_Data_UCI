@@ -115,12 +115,23 @@ if page == "Dashboard":
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("📍 Top 10 Locations")
-            by_location = filtered_df.groupby('location')['weight_lbs'].sum().sort_values(ascending=False).head(10)
-            fig = px.bar(by_location, orientation='h',
-                        labels={'value': 'Weight (lbs)', 'location': 'Location'})
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
+            st.subheader("🤝 Donation Partners")
+            partners = ['Basic Needs', "Mary's Kitchen", 'Goodwill MO', 'One World', 'Zot Exchange']
+            partner_df = df[df['location'].isin(partners)].groupby('location')['weight_lbs'].sum().reset_index()
+            partner_df.columns = ['Partner', 'Total Weight (lbs)']
+            
+            if len(partner_df) == 0:
+                st.info("No partner donation data available.")
+            else:
+                fig = px.pie(
+                    partner_df,
+                    values='Total Weight (lbs)',
+                    names='Partner',
+                    title='Total Donations by Partner'
+                )
+                fig.update_traces(textposition='inside', textinfo='percent+label')
+                fig.update_layout(height=400)
+                st.plotly_chart(fig, use_container_width=True)
         
         # ========================================
         # COMMUNITY COMPARISON OVER TIME
