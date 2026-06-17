@@ -113,7 +113,12 @@ if page == "Dashboard":
                          markers=True)
             fig.update_layout(xaxis_tickangle=-45, 
                               height=400,
-                              font=dict(size=18))
+                              font=dict(size=18),
+                              xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks specifically
+                              yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks specifically
+                              xaxis_title_font=dict(size=18),       # x-axis title specifically
+                              yaxis_title_font=dict(size=18)        # y-axis title specifically
+                              )
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
