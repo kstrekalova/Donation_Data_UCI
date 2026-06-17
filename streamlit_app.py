@@ -207,6 +207,45 @@ elif page == "Dashboard - Partners":
 
         st.markdown("---")
 
+        # FILTERS
+        st.subheader("Filter Partners")
+        all_partners = sorted(PARTNERS)
+
+        if 'selected_partners' not in st.session_state:
+            st.session_state.selected_partners = all_partners
+
+        left_col, right_col = st.columns([1, 3])
+
+        with left_col:
+            st.write("**Quick Actions:**")
+            if st.button("✅ Select All"):
+                st.session_state.selected_partners = all_partners
+                st.rerun()
+            if st.button("❌ Clear All"):
+                st.session_state.selected_partners = []
+                st.rerun()
+            st.write("")
+            st.write("**Quick Exclude:**")
+            for partner in all_partners:
+                if st.button(f"Hide {partner}", key=f"hide_{partner}"):
+                    if partner in st.session_state.selected_partners:
+                        st.session_state.selected_partners.remove(partner)
+                        st.rerun()
+
+        with right_col:
+            selected_partners = st.multiselect(
+                "Partners to display:",
+                options=all_partners,
+                default=[p for p in st.session_state.selected_partners if p in all_partners]
+            )
+            st.session_state.selected_partners = selected_partners
+            st.caption(f"Showing {len(selected_partners)} of {len(all_partners)} partners")
+
+        st.markdown("---")
+
+        # Then filter df before the charts
+        df = df[df['location'].isin(selected_partners)]
+
         # CHARTS ROW 1
         col1, col2 = st.columns(2)
 
