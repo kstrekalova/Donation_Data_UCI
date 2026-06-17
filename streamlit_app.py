@@ -50,6 +50,8 @@ if page == "Dashboard":
         df['date'] = pd.to_datetime(df['date'])
         df['year'] = df['date'].dt.year
         df['month'] = df['date'].dt.to_period('M')
+        df['academic_year'] = df['date'].apply(lambda x: x.year if x.month >= 9 else x.year - 1)
+        df['ay_label'] = df['academic_year'].astype(str) + '-' + (df['academic_year'] + 1).astype(str)
         
         # ========================================
         # FILTERS
@@ -105,20 +107,12 @@ if page == "Dashboard":
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("📈 Donations Over Time")
-            monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
-            monthly['month'] = monthly['month'].astype(str)
-            fig = px.line(monthly, x='month', y='weight_lbs',
-                         labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'},
-                         markers=True)
-            fig.update_layout(xaxis_tickangle=-45, 
-                              height=400,
-                              font=dict(size=18),
-                              xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks specifically
-                              yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks specifically
-                              xaxis_title_font=dict(size=18),       # x-axis title specifically
-                              yaxis_title_font=dict(size=18)        # y-axis title specifically
-                              )
+            st.subheader("🎓 Donations by Academic Year")
+            ay_totals = filtered_df.groupby('ay_label')['weight_lbs'].sum().reset_index()
+            ay_totals.columns = ['Academic Year', 'Total Weight (lbs)']
+            fig = px.bar(ay_totals, x='Academic Year', y='Total Weight (lbs)',
+                        labels={'Academic Year': 'Academic Year', 'Total Weight (lbs)': 'Weight (lbs)'})
+            fig.update_layout(height=400, xaxis_tickangle=-45)
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
@@ -147,6 +141,29 @@ if page == "Dashboard":
                     uniformtext_mode='hide'
                 )
                 st.plotly_chart(fig, use_container_width=True)
+
+
+        st.markdown("---")
+
+        # ========================================
+        # CHARTS ROW 2
+        # ========================================
+        st.subheader("📈 Donations Over Time")
+        monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
+        monthly['month'] = monthly['month'].astype(str)
+        fig = px.line(monthly, x='month', y='weight_lbs',
+                    labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'},
+                    markers=True)
+        fig.update_layout(xaxis_tickangle=-45, 
+                          height=400,
+                          font=dict(size=18),
+                          xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks 
+                          yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks 
+                          xaxis_title_font=dict(size=18),       # x-axis title 
+                          yaxis_title_font=dict(size=18)        # y-axis title 
+                          )
+        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("---")
         
         # ========================================
         # COMMUNITY COMPARISON OVER TIME
@@ -223,7 +240,12 @@ if page == "Dashboard":
                         title=f"Donation Trends for {len(selected_communities)} Communities")
             fig.update_layout(xaxis_tickangle=-45, 
                               height=500,
-                              font=dict(size=18))
+                              font=dict(size=18),
+                              xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks 
+                              yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks 
+                              xaxis_title_font=dict(size=18),       # x-axis title 
+                              yaxis_title_font=dict(size=18)        # y-axis title 
+                              )
             st.plotly_chart(fig, use_container_width=True)
             
             # # Stacked area chart
