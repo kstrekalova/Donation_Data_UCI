@@ -216,22 +216,21 @@ if page == "Dashboard":
                         title=f"Donation Trends for {len(selected_communities)} Communities")
             fig.update_layout(xaxis_tickangle=-45, 
                               height=500,
-                              font=dict(size=14),
-                              uniformtext_minsize=14)
+                              font=dict(size=18))
             st.plotly_chart(fig, use_container_width=True)
             
-            # Stacked area chart
-            st.subheader("📊 Stacked View")
-            fig_area = px.area(monthly_by_location,
-                            x='month',
-                            y='weight_lbs',
-                            color='location',
-                            labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'})
-            fig_area.update_layout(xaxis_tickangle=-45, 
-                                   height=500,
-                                   font=dict(size=14),
-                                   uniformtext_minsize=14)
-            st.plotly_chart(fig_area, use_container_width=True)
+            # # Stacked area chart
+            # st.subheader("📊 Stacked View")
+            # fig_area = px.area(monthly_by_location,
+            #                 x='month',
+            #                 y='weight_lbs',
+            #                 color='location',
+            #                 labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'})
+            # fig_area.update_layout(xaxis_tickangle=-45, 
+            #                        height=500,
+            #                        font=dict(size=14),
+            #                        uniformtext_minsize=14)
+            # st.plotly_chart(fig_area, use_container_width=True)
             
         else:
             st.info("👆 Select at least one community above to view comparison charts")
