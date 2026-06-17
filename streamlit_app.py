@@ -92,7 +92,7 @@ if page == "Dashboard - Housing":
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("🎓 Donations by Academic Year")
+            st.subheader("Donations by Academic Year")
             ay_totals = filtered_df.groupby('ay_label')['weight_lbs'].sum().reset_index()
             ay_totals.columns = ['Academic Year', 'Total Weight (lbs)']
             fig = px.bar(ay_totals, x='Academic Year', y='Total Weight (lbs)')
@@ -100,7 +100,7 @@ if page == "Dashboard - Housing":
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            st.subheader("📍 Weight by Housing Community")
+            st.subheader("Weight by Housing Community")
             by_location = filtered_df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
             fig = px.bar(by_location, orientation='h',
                         labels={'value': 'Weight (lbs)', 'location': 'Community'})
@@ -148,10 +148,14 @@ if page == "Dashboard - Housing":
                 st.rerun()
 
         with right_col:
+            valid_defaults = [c for c in st.session_state.selected_communities if c in all_locations]
+            if not valid_defaults:
+                valid_defaults = top_locations
+
             selected_communities = st.multiselect(
                 "Communities to display:",
                 options=all_locations,
-                default=st.session_state.selected_communities,
+                default=valid_defaults,
                 help="Start typing to search"
             )
             st.session_state.selected_communities = selected_communities
