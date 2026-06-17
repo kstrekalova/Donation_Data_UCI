@@ -25,7 +25,7 @@ PARTNERS = ['AMVETS', 'ATRS', 'Basic Needs', 'Dept Freecycle', 'FRESH', 'Food', 
 db = DonationDatabase()
 
 # Sidebar navigation
-st.sidebar.title("📦 UCI Donation Tracker")
+st.sidebar.title("UCI Donation Tracker")
 # Build page list — only show Admin tab if logged in as admin
 pages = ["Dashboard - Housing", "Dashboard - Partners", "Add Donation", "View Data", "Reports", "Community Analysis"]
 if st.session_state.get("role") == "admin":
@@ -36,7 +36,7 @@ page = st.sidebar.radio("Navigation", pages)
 # PAGE 1: DASHBOARD - HOUSING
 # ============================================
 if page == "Dashboard - Housing":
-    st.title("🏘️ Housing Donation Dashboard")
+    st.title("Housing Donation Dashboard")
 
     df = db.get_all_donations()
     df['weight_lbs'] = df['weight_lbs'].fillna(0)
@@ -111,7 +111,7 @@ if page == "Dashboard - Housing":
 
         
         # CHARTS ROW 2
-        st.subheader("📈 Donations Over Time")
+        st.subheader("Donations Over Time")
         monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
         monthly['month'] = monthly['month'].astype(str)
         # Filter to start at 2017 to make up for lacking data
@@ -128,7 +128,7 @@ if page == "Dashboard - Housing":
         st.markdown("---")
 
         # COMMUNITY COMPARISON
-        st.subheader("🏘️ Donations Over Time by Community")
+        st.subheader("Donations Over Time by Community")
         all_locations = sorted(HOUSING)
         top_locations = df.groupby('location')['weight_lbs'].sum().nlargest(5).index.tolist()
 
@@ -186,7 +186,7 @@ if page == "Dashboard - Housing":
 # PAGE 2: DASHBOARD - PARTNERS
 # ============================================
 elif page == "Dashboard - Partners":
-    st.title("🤝 Partner Donations Dashboard")
+    st.title("Partner Donations Dashboard")
 
     df = db.get_all_donations()
     df['weight_lbs'] = df['weight_lbs'].fillna(0)
@@ -214,7 +214,7 @@ elif page == "Dashboard - Partners":
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("🥧 Total Donations by Partner")
+            st.subheader("Total Donations by Partner")
             partner_df = df.groupby('location')['weight_lbs'].sum().reset_index()
             partner_df.columns = ['Partner', 'Total Weight (lbs)']
             fig = px.pie(partner_df, values='Total Weight (lbs)', names='Partner')
@@ -224,7 +224,7 @@ elif page == "Dashboard - Partners":
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            st.subheader("📊 Weight by Partner")
+            st.subheader("Weight by Partner")
             by_partner = df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
             fig = px.bar(by_partner, orientation='h',
                         labels={'value': 'Weight (lbs)', 'location': 'Partner'})
@@ -265,18 +265,6 @@ elif page == "Dashboard - Partners":
 
         # Then filter df before the charts
         df = df[df['location'].isin(selected_partners)]
-
-        # DONATIONS OVER TIME
-        st.subheader("📈 Partner Donations Over Time")
-        monthly_by_partner = df.groupby(['month', 'location'])['weight_lbs'].sum().reset_index()
-        monthly_by_partner['month'] = monthly_by_partner['month'].astype(str)
-        fig = px.line(monthly_by_partner, x='month', y='weight_lbs', color='location',
-                    labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Partner'},
-                    markers=True)
-        fig.update_layout(xaxis_tickangle=-45, height=400, font=dict(size=18),
-                          xaxis=dict(tickfont=dict(size=16)),
-                          yaxis=dict(tickfont=dict(size=16)))
-        st.plotly_chart(fig, use_container_width=True)
 
         
 
@@ -331,7 +319,7 @@ elif page == "Add Donation":
 # PAGE 4: VIEW DATA
 # ============================================
 elif page == "View Data":
-    st.title("📋 View All Donations")
+    st.title("View All Donations")
     
     df = db.get_all_donations()
     
@@ -429,7 +417,7 @@ elif page == "View Data":
 # PAGE 5: REPORTS
 # ============================================
 elif page == "Reports":
-    st.title("📈 Reports")
+    st.title("Reports")
     
     df = db.get_all_donations()
     
@@ -502,7 +490,7 @@ elif page == "Reports":
 # PAGE 6: COMMUNITY ANALYSIS
 # ============================================
 elif page == "Community Analysis":
-    st.title("🏘️ Community Analysis")
+    st.title("Community Analysis")
     
     df = db.get_all_donations()
     
@@ -541,7 +529,7 @@ elif page == "Community Analysis":
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("📅 Timeline")
+            st.subheader("Timeline")
             monthly = community_df.groupby('month')['weight_lbs'].sum().reset_index()
             monthly['month'] = monthly['month'].astype(str)
             fig = px.bar(monthly, x='month', y='weight_lbs',
@@ -551,7 +539,7 @@ elif page == "Community Analysis":
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            st.subheader("📊 By Year")
+            st.subheader("By Year")
             yearly = community_df.groupby('year').agg({
                 'id': 'count',
                 'weight_lbs': 'sum',
