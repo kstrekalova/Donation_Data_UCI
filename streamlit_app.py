@@ -136,7 +136,7 @@ if page == "Dashboard":
                 )
                 fig.update_layout(
                     height=400,
-                    uniformtext_minsize=10,
+                    uniformtext_minsize=16,
                     uniformtext_mode='hide'
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -214,7 +214,10 @@ if page == "Dashboard":
                         labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'},
                         markers=True,
                         title=f"Donation Trends for {len(selected_communities)} Communities")
-            fig.update_layout(xaxis_tickangle=-45, height=500)
+            fig.update_layout(xaxis_tickangle=-45, 
+                              height=500,
+                              font=dict(size=14),
+                              uniformtext_minsize=14)
             st.plotly_chart(fig, use_container_width=True)
             
             # Stacked area chart
@@ -224,7 +227,10 @@ if page == "Dashboard":
                             y='weight_lbs',
                             color='location',
                             labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'})
-            fig_area.update_layout(xaxis_tickangle=-45, height=500)
+            fig_area.update_layout(xaxis_tickangle=-45, 
+                                   height=500,
+                                   font=dict(size=14),
+                                   uniformtext_minsize=14)
             st.plotly_chart(fig_area, use_container_width=True)
             
         else:
@@ -496,7 +502,8 @@ elif page == "Community Analysis":
             monthly['month'] = monthly['month'].astype(str)
             fig = px.bar(monthly, x='month', y='weight_lbs',
                         labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'})
-            fig.update_layout(xaxis_tickangle=-45)
+            fig.update_layout(xaxis_tickangle=-45,
+                              font=dict(size=14))
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
