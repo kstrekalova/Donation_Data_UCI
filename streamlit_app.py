@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 from database import DonationDatabase
+from database import get_connection
 from add_donation import show_add_donation
 from admin import show_admin
 import config
@@ -304,6 +305,16 @@ elif page == "View Data":
             use_container_width=True,
             hide_index=True
         )
+
+        # Allow by-row deletion of data for admin
+        if st.session_state.get("role") == "admin":
+            for _, row in display_df.iterrows():
+                col1, col2 = st.columns([6, 1])
+                col1.write(f"{row['date']} — {row['location']} — {row['weight_lbs']} lbs")
+                if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
+                    db.delete_donation(row['id'])
+                    st.success(f"Deleted record ID {row['id']}")
+                    st.rerun()
         
         # Download button
         csv = filtered_df.to_csv(index=False)
@@ -313,15 +324,37 @@ elif page == "View Data":
             file_name=f"donations_{datetime.now().strftime('%Y%m%d')}.csv",
             mime="text/csv"
         )
-
+        
+        # Allow admin to upload updated CSV
         if st.session_state.get("role") == "admin":
-            for _, row in display_df.iterrows():
-                col1, col2 = st.columns([6, 1])
-                col1.write(f"{row['date']} — {row['location']} — {row['weight_lbs']} lbs")
-                if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
-                    db.delete_donation(row['id'])
-                    st.success(f"Deleted record ID {row['id']}")
-                    st.rerun()
+            st.subheader("Upload Updated CSV")
+            uploaded_file = st.file_uploader("Upload modified CSV", type="csv")
+            
+            if uploaded_file:
+                new_df = pd.read_csv(uploaded_file)
+                
+                # Validate columns
+                required_cols = {'id', 'date', 'location', 'weight_lbs', 'bins', 'moveout', 'notes'}
+                if not required_cols.issubset(new_df.columns):
+                    st.error("CSV is missing required columns!")
+                else:
+                    if st.button("Confirm Upload & Update Database"):
+                        conn = get_connection()
+                        cursor = conn.cursor()
+                        updated = 0
+                        for _, row in new_df.iterrows():
+                            cursor.execute("""
+                                UPDATE donations 
+                                SET date=%s, location=%s, weight_lbs=%s, bins=%s, moveout=%s, notes=%s
+                                WHERE id=%s
+                            """, (row['date'], row['location'], row.get('weight_lbs'),
+                                row.get('bins'), row.get('moveout'), row.get('notes'), row['id']))
+                            updated += cursor.rowcount
+                        conn.commit()
+                        cursor.close()
+                        conn.close()
+                        st.success(f"Updated {updated} records!")
+                        st.rerun()
 
 # ============================================
 # PAGE 4: REPORTS

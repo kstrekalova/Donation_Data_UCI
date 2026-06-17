@@ -1,0 +1,19 @@
+Erica's notes:
+
+- pie chart of donation partners 
+*** good point: should probably separate partners from housing, right?
+
+- bar chart of total donations over the years (by academic year)
+
+- start at 2017 for "total donations over time"
+*** data looks inaccurate, too-high values (e.g. June'25 should be ~45k not 90k)
+
+- donation trends for housing communities isn't very accessible to public
+*** mmmmmaybe. 
+
+- larger fonts on graphs
+
+- highlight singular big numbers:
+    > Pounds donated in June 2025
+    > Pounds donated in 24-25 academic year
+
