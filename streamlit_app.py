@@ -14,9 +14,12 @@ import config
 # Page configuration
 st.set_page_config(
     page_title="UCI Donation Tracker",
-    page_icon="📦",
     layout="wide"
 )
+
+# Define housing vs partner groups
+HOUSING = ['ACC', 'Arroyo Vista', 'Campus Village', 'Mesa Court', 'Middle Earth', 'Move-out total', 'Palo Verde', 'Verano Place']
+PARTNERS = ['AMVETS', 'ATRS', 'Basic Needs', 'Dept Freecycle', 'FRESH', 'Food', "Mary's Kitchen", 'Goodwill', 'Goodwill MO', 'One World', 'Tex Green', 'Unknown', 'Zot exchange']
 
 # Initialize database
 db = DonationDatabase()
@@ -24,54 +27,43 @@ db = DonationDatabase()
 # Sidebar navigation
 st.sidebar.title("📦 UCI Donation Tracker")
 # Build page list — only show Admin tab if logged in as admin
-pages = ["Dashboard", "Add Donation", "View Data", "Reports", "Community Analysis"]
+pages = ["Dashboard - Housing", "Dashboard - Partners", "Add Donation", "View Data", "Reports", "Community Analysis"]
 if st.session_state.get("role") == "admin":
     pages.append("Admin")
-
-page = st.sidebar.radio(
-    "Navigation",
-    pages
-)
+page = st.sidebar.radio("Navigation", pages)
 
 # ============================================
-# PAGE 1: DASHBOARD
+# PAGE 1: DASHBOARD - HOUSING
 # ============================================
-if page == "Dashboard":
-    st.title("📊 Donation Dashboard")
-    
-    # Load all data
+if page == "Dashboard - Housing":
+    st.title("🏘️ Housing Donation Dashboard")
+
     df = db.get_all_donations()
     df['weight_lbs'] = df['weight_lbs'].fillna(0)
-    
+    df = df[df['location'].isin(HOUSING)]
+
     if len(df) == 0:
-        st.warning("No donations in database yet!")
+        st.warning("No housing donations in database yet!")
     else:
-        # Convert date to datetime
         df['date'] = pd.to_datetime(df['date'])
         df['year'] = df['date'].dt.year
         df['month'] = df['date'].dt.to_period('M')
         df['academic_year'] = df['date'].apply(lambda x: x.year if x.month >= 9 else x.year - 1)
         df['ay_label'] = df['academic_year'].astype(str) + '-' + (df['academic_year'] + 1).astype(str)
-        
-        # ========================================
+
         # FILTERS
-        # ========================================
         st.subheader("Filters")
         col1, col2, col3 = st.columns(3)
-        
         with col1:
             locations = ['All Locations'] + sorted(df['location'].dropna().unique().tolist())
             selected_location = st.selectbox("Filter by Location", locations)
-        
         with col2:
             years = ['All Years'] + sorted(df['year'].unique().tolist(), reverse=True)
             selected_year = st.selectbox("Filter by Year", years)
-        
         with col3:
             moveout_types = ['All Types'] + sorted(df['moveout'].dropna().unique().tolist())
             selected_moveout = st.selectbox("Filter by Move-out", moveout_types)
-        
-        # Apply filters
+
         filtered_df = df.copy()
         if selected_location != 'All Locations':
             filtered_df = filtered_df[filtered_df['location'] == selected_location]
@@ -79,107 +71,68 @@ if page == "Dashboard":
             filtered_df = filtered_df[filtered_df['year'] == selected_year]
         if selected_moveout != 'All Types':
             filtered_df = filtered_df[filtered_df['moveout'] == selected_moveout]
-        
+
         st.markdown("---")
-        
-        # ========================================
+
         # TOP METRICS
-        # ========================================
         col1, col2, col3, col4 = st.columns(4)
-        
         with col1:
             st.metric("Total Donations", f"{len(filtered_df):,}")
         with col2:
-            total_weight = filtered_df['weight_lbs'].sum()
-            st.metric("Total Weight (lbs)", f"{total_weight:,.0f}")
+            st.metric("Total Weight (lbs)", f"{filtered_df['weight_lbs'].sum():,.0f}")
         with col3:
             total_bins = pd.to_numeric(filtered_df['bins'], errors='coerce').sum()
             st.metric("Total Bins", f"{total_bins:,.0f}")
         with col4:
-            locations_count = filtered_df['location'].nunique()
-            st.metric("Locations", locations_count)
-        
+            st.metric("Communities", filtered_df['location'].nunique())
+
         st.markdown("---")
-        
-        # ========================================
+
         # CHARTS ROW 1
-        # ========================================
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.subheader("🎓 Donations by Academic Year")
             ay_totals = filtered_df.groupby('ay_label')['weight_lbs'].sum().reset_index()
             ay_totals.columns = ['Academic Year', 'Total Weight (lbs)']
-            fig = px.bar(ay_totals, x='Academic Year', y='Total Weight (lbs)',
-                        labels={'Academic Year': 'Academic Year', 'Total Weight (lbs)': 'Weight (lbs)'})
+            fig = px.bar(ay_totals, x='Academic Year', y='Total Weight (lbs)')
             fig.update_layout(height=400, xaxis_tickangle=-45)
             st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.subheader("🤝 Donation Partners")
-            partners = ['Basic Needs', "Mary's Kitchen", 'Goodwill MO', 'One World', 'Zot exchange']
-            partner_df = df[df['location'].isin(partners)].groupby('location')['weight_lbs'].sum().reset_index()
-            partner_df.columns = ['Partner', 'Total Weight (lbs)']
-            
-            if len(partner_df) == 0:
-                st.info("No partner donation data available.")
-            else:
-                fig = px.pie(
-                    partner_df,
-                    values='Total Weight (lbs)',
-                    names='Partner',
-                    title='Total Donations by Partner'
-                )
-                fig.update_traces(
-                    textposition='outside',
-                    textinfo='percent',
-                    insidetextorientation='radial'
-                )
-                fig.update_layout(
-                    height=400,
-                    uniformtext_minsize=16,
-                    uniformtext_mode='hide'
-                )
-                st.plotly_chart(fig, use_container_width=True)
 
+        with col2:
+            st.subheader("📍 Weight by Housing Community")
+            by_location = filtered_df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
+            fig = px.bar(by_location, orientation='h',
+                        labels={'value': 'Weight (lbs)', 'location': 'Community'})
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("---")
 
-        # ========================================
         # CHARTS ROW 2
-        # ========================================
         st.subheader("📈 Donations Over Time")
         monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
         monthly['month'] = monthly['month'].astype(str)
         fig = px.line(monthly, x='month', y='weight_lbs',
                     labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'},
                     markers=True)
-        fig.update_layout(xaxis_tickangle=-45, 
-                          height=400,
-                          font=dict(size=18),
-                          xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks 
-                          yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks 
-                          xaxis_title_font=dict(size=18),       # x-axis title 
-                          yaxis_title_font=dict(size=18)        # y-axis title 
-                          )
+        fig.update_layout(xaxis_tickangle=-45, height=400, font=dict(size=18),
+                          xaxis=dict(tickfont=dict(size=16)),
+                          yaxis=dict(tickfont=dict(size=16)),
+                          xaxis_title_font=dict(size=18),
+                          yaxis_title_font=dict(size=18))
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("---")
-        
-        # ========================================
-        # COMMUNITY COMPARISON OVER TIME
-        # ========================================
-        st.subheader("🏘️ Donations Over Time by Community")
 
-        all_locations = sorted(df['location'].dropna().unique().tolist())
+        # COMMUNITY COMPARISON
+        st.subheader("🏘️ Donations Over Time by Community")
+        all_locations = sorted(HOUSING)
         top_locations = df.groupby('location')['weight_lbs'].sum().nlargest(5).index.tolist()
 
-        # Initialize session state
         if 'selected_communities' not in st.session_state:
             st.session_state.selected_communities = top_locations
 
         st.write("**Filter Communities:**")
-
-        # Two-column layout for better organization
         left_col, right_col = st.columns([1, 3])
 
         with left_col:
@@ -187,85 +140,108 @@ if page == "Dashboard":
             if st.button("🔝 Top 5 Only"):
                 st.session_state.selected_communities = top_locations
                 st.rerun()
-            
             if st.button("✅ Select All"):
                 st.session_state.selected_communities = all_locations
                 st.rerun()
-            
             if st.button("❌ Clear All"):
                 st.session_state.selected_communities = []
                 st.rerun()
-            
-            # Exclude specific communities
-            st.write("")
-            st.write("**Quick Exclude:**")
-            common_excludes = ["Goodwill", "Salvation Army", "Other"]  # Add common ones
-            for exclude_item in common_excludes:
-                if exclude_item in all_locations:
-                    if st.button(f"Hide {exclude_item}"):
-                        if exclude_item in st.session_state.selected_communities:
-                            st.session_state.selected_communities.remove(exclude_item)
-                            st.rerun()
 
         with right_col:
-            # Main multiselect (most user-friendly)
             selected_communities = st.multiselect(
                 "Communities to display:",
                 options=all_locations,
                 default=st.session_state.selected_communities,
-                help="💡 Tip: Start typing to search (e.g., type 'Mesa' to find 'Mesa Court')"
+                help="Start typing to search"
             )
-            
-            # Update session state
             st.session_state.selected_communities = selected_communities
-            
-            # Show count
             st.caption(f"Showing {len(selected_communities)} of {len(all_locations)} communities")
 
         if selected_communities:
-            # Filter to selected communities
             community_df = df[df['location'].isin(selected_communities)].copy()
-            
-            # Group by month and location
             monthly_by_location = community_df.groupby(['month', 'location'])['weight_lbs'].sum().reset_index()
             monthly_by_location['month'] = monthly_by_location['month'].astype(str)
-            
-            # Create line chart
-            fig = px.line(monthly_by_location, 
-                        x='month', 
-                        y='weight_lbs',
-                        color='location',
+            fig = px.line(monthly_by_location, x='month', y='weight_lbs', color='location',
                         labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'},
                         markers=True,
                         title=f"Donation Trends for {len(selected_communities)} Communities")
-            fig.update_layout(xaxis_tickangle=-45, 
-                              height=500,
-                              font=dict(size=18),
-                              xaxis=dict(tickfont=dict(size=16)),   # x-axis ticks 
-                              yaxis=dict(tickfont=dict(size=16)),   # y-axis ticks 
-                              xaxis_title_font=dict(size=18),       # x-axis title 
-                              yaxis_title_font=dict(size=18)        # y-axis title 
-                              )
+            fig.update_layout(xaxis_tickangle=-45, height=500, font=dict(size=18),
+                              xaxis=dict(tickfont=dict(size=16)),
+                              yaxis=dict(tickfont=dict(size=16)),
+                              xaxis_title_font=dict(size=18),
+                              yaxis_title_font=dict(size=18))
             st.plotly_chart(fig, use_container_width=True)
-            
-            # # Stacked area chart
-            # st.subheader("📊 Stacked View")
-            # fig_area = px.area(monthly_by_location,
-            #                 x='month',
-            #                 y='weight_lbs',
-            #                 color='location',
-            #                 labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Location'})
-            # fig_area.update_layout(xaxis_tickangle=-45, 
-            #                        height=500,
-            #                        font=dict(size=14),
-            #                        uniformtext_minsize=14)
-            # st.plotly_chart(fig_area, use_container_width=True)
-            
         else:
-            st.info("👆 Select at least one community above to view comparison charts")
+            st.info("Select at least one community above to view comparison charts")
+    
 
 # ============================================
-# PAGE 2: ADD DONATION
+# PAGE 2: DASHBOARD - PARTNERS
+# ============================================
+elif page == "Dashboard - Partners":
+    st.title("🤝 Partner Donations Dashboard")
+
+    df = db.get_all_donations()
+    df['weight_lbs'] = df['weight_lbs'].fillna(0)
+    df = df[df['location'].isin(PARTNERS)]
+
+    if len(df) == 0:
+        st.warning("No partner donations in database yet!")
+    else:
+        df['date'] = pd.to_datetime(df['date'])
+        df['year'] = df['date'].dt.year
+        df['month'] = df['date'].dt.to_period('M')
+
+        # TOP METRICS
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Donations", f"{len(df):,}")
+        with col2:
+            st.metric("Total Weight (lbs)", f"{df['weight_lbs'].sum():,.0f}")
+        with col3:
+            st.metric("Partner Organizations", df['location'].nunique())
+
+        st.markdown("---")
+
+        # CHARTS ROW 1
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("🥧 Total Donations by Partner")
+            partner_df = df.groupby('location')['weight_lbs'].sum().reset_index()
+            partner_df.columns = ['Partner', 'Total Weight (lbs)']
+            fig = px.pie(partner_df, values='Total Weight (lbs)', names='Partner')
+            fig.update_traces(textposition='outside', textinfo='percent',
+                              insidetextorientation='radial')
+            fig.update_layout(height=400, uniformtext_minsize=16, uniformtext_mode='hide')
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            st.subheader("📊 Weight by Partner")
+            by_partner = df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
+            fig = px.bar(by_partner, orientation='h',
+                        labels={'value': 'Weight (lbs)', 'location': 'Partner'})
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")
+
+        # DONATIONS OVER TIME
+        st.subheader("📈 Partner Donations Over Time")
+        monthly_by_partner = df.groupby(['month', 'location'])['weight_lbs'].sum().reset_index()
+        monthly_by_partner['month'] = monthly_by_partner['month'].astype(str)
+        fig = px.line(monthly_by_partner, x='month', y='weight_lbs', color='location',
+                    labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month', 'location': 'Partner'},
+                    markers=True)
+        fig.update_layout(xaxis_tickangle=-45, height=400, font=dict(size=18),
+                          xaxis=dict(tickfont=dict(size=16)),
+                          yaxis=dict(tickfont=dict(size=16)))
+        st.plotly_chart(fig, use_container_width=True)
+
+        
+
+# ============================================
+# PAGE 3: ADD DONATION
 # ============================================
 elif page == "Add Donation":
     show_add_donation()
@@ -312,7 +288,7 @@ elif page == "Add Donation":
                     st.error(f"Error saving donation: {e}")
 
 # ============================================
-# PAGE 3: VIEW DATA
+# PAGE 4: VIEW DATA
 # ============================================
 elif page == "View Data":
     st.title("📋 View All Donations")
@@ -410,7 +386,7 @@ elif page == "View Data":
                     st.rerun()
 
 # ============================================
-# PAGE 4: REPORTS
+# PAGE 5: REPORTS
 # ============================================
 elif page == "Reports":
     st.title("📈 Reports")
@@ -483,7 +459,7 @@ elif page == "Reports":
         )
 
 # ============================================
-# PAGE 5: COMMUNITY ANALYSIS
+# PAGE 6: COMMUNITY ANALYSIS
 # ============================================
 elif page == "Community Analysis":
     st.title("🏘️ Community Analysis")
@@ -585,7 +561,7 @@ elif page == "Community Analysis":
         )
 
     # ============================================
-# PAGE 6: ADMIN PANEL
+# PAGE 7: ADMIN PANEL
 # ============================================
 elif page == "Admin":
     show_admin()
