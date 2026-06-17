@@ -10,6 +10,7 @@ from database import get_connection
 from add_donation import show_add_donation
 from admin import show_admin
 import config
+import calendar
 
 # Page configuration
 st.set_page_config(
@@ -45,6 +46,21 @@ if page == "Dashboard - Housing":
     if len(df) == 0:
         st.warning("No housing donations in database yet!")
     else:
+        highlight_year = 2025
+        highlight_month = 6
+        ay_start_year = 2024
+
+        # Admin config for metrics: ===
+        if st.session_state.get("role") == "admin":
+            with st.expander("Configure Highlight Metrics"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    highlight_year = st.number_input("Highlight Month — Year", value=2025, min_value=2000, max_value=2040)
+                    highlight_month = st.number_input("Highlight Month — Month", value=6, min_value=1, max_value=12)
+                with col2:
+                    ay_start_year = st.number_input("Academic Year Start", value=2024, min_value=2000, max_value=2040)
+        # ===
+
         df['date'] = pd.to_datetime(df['date'])
         df['year'] = df['date'].dt.year
         df['month'] = df['date'].dt.to_period('M')
@@ -75,16 +91,19 @@ if page == "Dashboard - Housing":
         st.markdown("---")
 
         # TOP METRICS
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2 = st.columns(2)
+        month_name = calendar.month_name[highlight_month]
+
+
         with col1:
-            st.metric("Total Donations", f"{len(filtered_df):,}")
+            june_mask = (df['date'].dt.year == highlight_year) & (df['date'].dt.month == highlight_month)
+            june_total = df.loc[june_mask, 'weight_lbs'].sum()
+            st.metric(f"Pounds Donated — {month_name} {highlight_year}", f"{june_total:,.0f} lbs")
+
         with col2:
-            st.metric("Total Weight (lbs)", f"{filtered_df['weight_lbs'].sum():,.0f}")
-        with col3:
-            total_bins = pd.to_numeric(filtered_df['bins'], errors='coerce').sum()
-            st.metric("Total Bins", f"{total_bins:,.0f}")
-        with col4:
-            st.metric("Communities", filtered_df['location'].nunique())
+            ay_mask = (df['date'] >= f'{ay_start_year}-09-01') & (df['date'] <= f'{ay_start_year + 1}-08-31')
+            ay_total = df.loc[ay_mask, 'weight_lbs'].sum()
+            st.metric(f"Pounds Donated — {ay_start_year}-{str(ay_start_year + 1)[-2:]} Academic Year", f"{ay_total:,.0f} lbs")
 
         st.markdown("---")
 
@@ -262,7 +281,7 @@ elif page == "Dashboard - Partners":
         with col3:
             st.metric("Partner Organizations", df['location'].nunique())
 
-
+############ Why is filter still at bottom????
         
 
 # ============================================
