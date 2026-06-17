@@ -116,7 +116,7 @@ if page == "Dashboard":
         
         with col2:
             st.subheader("🤝 Donation Partners")
-            partners = ['Basic Needs', "Mary's Kitchen", 'Goodwill MO', 'One World', 'Zot Exchange']
+            partners = ['Basic Needs', "Mary's Kitchen", 'Goodwill MO', 'One World', 'Zot exchange']
             partner_df = df[df['location'].isin(partners)].groupby('location')['weight_lbs'].sum().reset_index()
             partner_df.columns = ['Partner', 'Total Weight (lbs)']
             
@@ -129,8 +129,16 @@ if page == "Dashboard":
                     names='Partner',
                     title='Total Donations by Partner'
                 )
-                fig.update_traces(textposition='inside', textinfo='percent+label')
-                fig.update_layout(height=400)
+                fig.update_traces(
+                    textposition='outside',
+                    textinfo='percent',
+                    insidetextorientation='radial'
+                )
+                fig.update_layout(
+                    height=400,
+                    uniformtext_minsize=10,
+                    uniformtext_mode='hide'
+                )
                 st.plotly_chart(fig, use_container_width=True)
         
         # ========================================
