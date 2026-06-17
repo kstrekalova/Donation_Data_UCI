@@ -109,15 +109,13 @@ if page == "Dashboard - Housing":
 
         st.markdown("---")
 
-        # Filter to start at 2017 to make up for lacking data
-        monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
-        monthly['month'] = monthly['month'].astype(str)
-        monthly = monthly[monthly['month'] >= '2017-01']  # add this line
-
+        
         # CHARTS ROW 2
         st.subheader("📈 Donations Over Time")
         monthly = filtered_df.groupby('month')['weight_lbs'].sum().reset_index()
         monthly['month'] = monthly['month'].astype(str)
+        # Filter to start at 2017 to make up for lacking data
+        monthly = monthly[monthly['month'] >= '2017-01']  
         fig = px.line(monthly, x='month', y='weight_lbs',
                     labels={'weight_lbs': 'Weight (lbs)', 'month': 'Month'},
                     markers=True)
