@@ -199,17 +199,6 @@ elif page == "Dashboard - Partners":
         df['year'] = df['date'].dt.year
         df['month'] = df['date'].dt.to_period('M')
 
-        # TOP METRICS
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Total Donations", f"{len(df):,}")
-        with col2:
-            st.metric("Total Weight (lbs)", f"{df['weight_lbs'].sum():,.0f}")
-        with col3:
-            st.metric("Partner Organizations", df['location'].nunique())
-
-        st.markdown("---")
-
         # CHARTS ROW 1
         col1, col2 = st.columns(2)
 
@@ -263,8 +252,16 @@ elif page == "Dashboard - Partners":
 
         st.markdown("---")
 
-        # Then filter df before the charts
-        df = df[df['location'].isin(selected_partners)]
+        
+        # TOP METRICS
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Donations", f"{len(df):,}")
+        with col2:
+            st.metric("Total Weight (lbs)", f"{df['weight_lbs'].sum():,.0f}")
+        with col3:
+            st.metric("Partner Organizations", df['location'].nunique())
+
 
         
 
