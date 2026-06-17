@@ -305,16 +305,6 @@ elif page == "View Data":
             use_container_width=True,
             hide_index=True
         )
-
-        # Allow by-row deletion of data for admin
-        if st.session_state.get("role") == "admin":
-            for _, row in display_df.iterrows():
-                col1, col2 = st.columns([6, 1])
-                col1.write(f"{row['date']} — {row['location']} — {row['weight_lbs']} lbs")
-                if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
-                    db.delete_donation(row['id'])
-                    st.success(f"Deleted record ID {row['id']}")
-                    st.rerun()
         
         # Download button
         csv = filtered_df.to_csv(index=False)
@@ -355,6 +345,16 @@ elif page == "View Data":
                         conn.close()
                         st.success(f"Updated {updated} records!")
                         st.rerun()
+
+        # Allow by-row deletion of data for admin
+        if st.session_state.get("role") == "admin":
+            for _, row in display_df.iterrows():
+                col1, col2 = st.columns([6, 1])
+                col1.write(f"{row['date']} — {row['location']} — {row['weight_lbs']} lbs")
+                if col2.button("🗑️ Delete", key=f"del_{row['id']}"):
+                    db.delete_donation(row['id'])
+                    st.success(f"Deleted record ID {row['id']}")
+                    st.rerun()
 
 # ============================================
 # PAGE 4: REPORTS
