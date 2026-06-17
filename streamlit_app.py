@@ -207,6 +207,29 @@ elif page == "Dashboard - Partners":
 
         st.markdown("---")
 
+        # CHARTS ROW 1
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("🥧 Total Donations by Partner")
+            partner_df = df.groupby('location')['weight_lbs'].sum().reset_index()
+            partner_df.columns = ['Partner', 'Total Weight (lbs)']
+            fig = px.pie(partner_df, values='Total Weight (lbs)', names='Partner')
+            fig.update_traces(textposition='outside', textinfo='percent',
+                              insidetextorientation='radial')
+            fig.update_layout(height=400, uniformtext_minsize=16, uniformtext_mode='hide')
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            st.subheader("📊 Weight by Partner")
+            by_partner = df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
+            fig = px.bar(by_partner, orientation='h',
+                        labels={'value': 'Weight (lbs)', 'location': 'Partner'})
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")
+
         # FILTERS
         st.subheader("Filter Partners")
         all_partners = sorted(PARTNERS)
@@ -245,29 +268,6 @@ elif page == "Dashboard - Partners":
 
         # Then filter df before the charts
         df = df[df['location'].isin(selected_partners)]
-
-        # CHARTS ROW 1
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("🥧 Total Donations by Partner")
-            partner_df = df.groupby('location')['weight_lbs'].sum().reset_index()
-            partner_df.columns = ['Partner', 'Total Weight (lbs)']
-            fig = px.pie(partner_df, values='Total Weight (lbs)', names='Partner')
-            fig.update_traces(textposition='outside', textinfo='percent',
-                              insidetextorientation='radial')
-            fig.update_layout(height=400, uniformtext_minsize=16, uniformtext_mode='hide')
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            st.subheader("📊 Weight by Partner")
-            by_partner = df.groupby('location')['weight_lbs'].sum().sort_values(ascending=True)
-            fig = px.bar(by_partner, orientation='h',
-                        labels={'value': 'Weight (lbs)', 'location': 'Partner'})
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-
-        st.markdown("---")
 
         # DONATIONS OVER TIME
         st.subheader("📈 Partner Donations Over Time")
