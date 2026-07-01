@@ -19,7 +19,7 @@ st.set_page_config(
 )
 
 # Define housing vs partner groups
-HOUSING = ['ACC', 'Arroyo Vista', 'Campus Village', 'Mesa Court', 'Middle Earth', 'Move-out total', 'Palo Verde', 'Verano Place']
+HOUSING = ['ACC', 'Arroyo Vista', 'Campus Village', 'Mesa Court', 'Middle Earth', 'Palo Verde', 'Verano Place']
 PARTNERS = ['AMVETS', 'ATRS', 'Basic Needs', 'Dept Freecycle', 'FRESH', 'Food', "Mary's Kitchen", 'Goodwill', 'Goodwill MO', 'One World', 'Tex Green', 'Unknown', 'Zot exchange']
 
 # Initialize database
