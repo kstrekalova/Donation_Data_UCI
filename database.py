@@ -3,11 +3,17 @@
 import psycopg2
 import pandas as pd
 import streamlit as st
-
+import time
 
 def get_connection():
-    """Get a PostgreSQL connection using Streamlit secrets"""
-    return psycopg2.connect(st.secrets["DATABASE_URL"])
+    for attempt in range(3):
+        try:
+            return psycopg2.connect(st.secrets["DATABASE_URL"])
+        except psycopg2.OperationalError:
+            if attempt < 2:
+                time.sleep(2)
+            else:
+                raise
 
 
 class DonationDatabase:
